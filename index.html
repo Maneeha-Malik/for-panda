@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Happy Birthday Panda 🐼</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600&family=Nunito:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #ffe9f0;
+    --ink: #3a2f45;
+    --panda: #2b2b33;
+    --rose: #ff7aa2;
+    --teal: #3cc4b0;
+    --lilac: #c9b6ff;
+    --white: #ffffff;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  html, body { height: 100%; background: var(--bg); color: var(--ink);
+    font-family: "Nunito", system-ui, sans-serif; overflow: hidden; }
+  canvas { position: fixed; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+  /* ---------- intro ---------- */
+  #intro { position: fixed; inset: 0; z-index: 10; background: var(--bg);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 18px; padding: 24px; text-align: center; transition: opacity .9s ease; }
+  #intro.gone { opacity: 0; pointer-events: none; }
+  #intro svg { width: min(46vw, 210px); height: auto; animation: tilt 3s ease-in-out infinite; }
+  #intro h2 { font-family: "Fredoka", sans-serif; font-weight: 600;
+    font-size: clamp(24px, 6vw, 34px); }
+  #intro p { font-size: 17px; opacity: .8; }
+  @keyframes tilt { 0%,100% { transform: rotate(-4deg); } 50% { transform: rotate(4deg); } }
+
+  button { font: 600 18px "Fredoka", sans-serif; color: var(--white); background: var(--rose);
+    border: 0; border-radius: 999px; padding: 14px 32px; cursor: pointer;
+    box-shadow: 0 6px 0 #e0527f; transition: transform .15s ease, box-shadow .15s ease; }
+  button:active { transform: translateY(4px); box-shadow: 0 2px 0 #e0527f; }
+  button:focus-visible { outline: 3px solid var(--teal); outline-offset: 4px; }
+
+  /* ---------- stage ---------- */
+  #stage { position: fixed; inset: 0; z-index: 3; overflow-y: auto; scroll-behavior: smooth;
+    padding: 6vh 18px 28vh; display: flex; flex-direction: column; align-items: center; }
+  .bubble, #sign { scroll-margin-bottom: 22vh; }
+  h1 { font-family: "Fredoka", sans-serif; font-weight: 600; text-align: center;
+    font-size: clamp(36px, 9vw, 64px); line-height: 1.1; color: var(--rose);
+    opacity: 0; transition: opacity 1.2s ease; }
+  #ecg { width: min(80vw, 320px); height: 50px; margin-top: 10px; opacity: 0; transition: opacity 1s ease; }
+  #ecg path { fill: none; stroke: var(--teal); stroke-width: 3; stroke-linecap: round;
+    stroke-linejoin: round; stroke-dasharray: 400; stroke-dashoffset: 400;
+    animation: beat 2.4s linear infinite; }
+  @keyframes beat { to { stroke-dashoffset: 0; } }
+
+  .load { width: min(80vw, 320px); margin-top: 10px; opacity: 0; transition: opacity 1s ease;
+    font-size: 14px; text-align: center; }
+  .bar { height: 10px; background: #fff; border-radius: 99px; margin-top: 6px; overflow: hidden; }
+  .bar i { display: block; height: 100%; width: 0; background: var(--teal); border-radius: 99px;
+    transition: width .2s linear; }
+
+  #bubbles { margin-top: 26px; width: min(100%, 520px); display: grid; gap: 12px; }
+  .bubble { background: var(--white); border-radius: 22px 22px 22px 6px; padding: 14px 18px;
+    font-size: clamp(16px, 3.8vw, 19px); line-height: 1.55; box-shadow: 0 4px 14px rgba(120,60,100,.12);
+    opacity: 0; transform: scale(.92) translateY(10px); transform-origin: left bottom;
+    transition: opacity .6s ease, transform .6s cubic-bezier(.2,1.4,.4,1); }
+  .bubble.pink { background: var(--rose); color: var(--white); }
+  .show { opacity: 1 !important; transform: none !important; }
+
+  #sign { margin-top: 22px; width: min(100%, 520px); text-align: center; opacity: 0;
+    transition: opacity 1.2s ease; }
+  #sign .luv { font-family: "Fredoka", sans-serif; font-size: clamp(20px, 5vw, 26px); color: var(--rose); }
+  #sign .code { margin: 16px auto 0; background: var(--panda); color: #9ff0dc; text-align: left;
+    border-radius: 14px; padding: 14px 16px; font: 13px/1.6 ui-monospace, Menlo, Consolas, monospace; }
+  #sign .code b { color: #ffd0e0; font-weight: 400; }
+
+  #replay { position: fixed; bottom: 14px; right: 14px; z-index: 6; font-size: 14px;
+    padding: 8px 18px; box-shadow: 0 4px 0 #e0527f; opacity: 0; pointer-events: none; transition: opacity .8s ease; }
+  #replay.on { opacity: 1; pointer-events: auto; }
+
+  /* floating emojis */
+  .float { position: fixed; bottom: -40px; z-index: 2; font-size: 26px; pointer-events: none;
+    animation: rise linear forwards; }
+  @keyframes rise { to { transform: translateY(-115vh) rotate(25deg); opacity: .2; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    * { transition-duration: .01s !important; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Intro: panda doctor -->
+<div id="intro">
+  <svg viewBox="0 0 200 215" aria-label="Panda doctor">
+    <circle cx="42" cy="55" r="22" fill="#2b2b33"/>
+    <circle cx="158" cy="55" r="22" fill="#2b2b33"/>
+    <ellipse cx="100" cy="108" rx="70" ry="62" fill="#fff" stroke="#2b2b33" stroke-width="3"/>
+    <ellipse cx="68" cy="102" rx="16" ry="22" fill="#2b2b33" transform="rotate(-20 68 102)"/>
+    <ellipse cx="132" cy="102" rx="16" ry="22" fill="#2b2b33" transform="rotate(20 132 102)"/>
+    <circle cx="70" cy="100" r="6" fill="#fff"/><circle cx="71" cy="101" r="3" fill="#2b2b33"/>
+    <circle cx="130" cy="100" r="6" fill="#fff"/><circle cx="129" cy="101" r="3" fill="#2b2b33"/>
+    <ellipse cx="100" cy="122" rx="9" ry="6" fill="#2b2b33"/>
+    <path d="M100 128 q-8 10 -16 4 M100 128 q8 10 16 4" stroke="#2b2b33" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <circle cx="50" cy="130" r="8" fill="#ff7aa2" opacity=".55"/>
+    <circle cx="150" cy="130" r="8" fill="#ff7aa2" opacity=".55"/>
+    <path d="M60 68 Q100 24 140 68 Z" fill="#fff" stroke="#2b2b33" stroke-width="3" stroke-linejoin="round"/>
+    <rect x="95" y="42" width="10" height="22" rx="2" fill="#ff7aa2"/>
+    <rect x="89" y="48" width="22" height="10" rx="2" fill="#ff7aa2"/>
+    <path d="M62 164 Q100 218 138 164" stroke="#3cc4b0" stroke-width="5" fill="none" stroke-linecap="round"/>
+    <circle cx="100" cy="199" r="9" fill="#3cc4b0" stroke="#2b2b33" stroke-width="2"/>
+  </svg>
+  <h2>Dr. Panda has a surprise for you 🩺</h2>
+  <p>Tap the button, Amna 🤍</p>
+  <button id="open">Open your surprise</button>
+</div>
+
+<canvas id="garden"></canvas>
+
+<div id="stage">
+  <h1 id="title">Happy Birthday<br>Panda 🐼</h1>
+
+  <svg id="ecg" viewBox="0 0 320 50" aria-hidden="true">
+    <path d="M0 28 H80 L92 28 L102 8 L116 46 L128 16 L136 28 H200 L212 28 L222 8 L236 46 L248 16 L256 28 H320"/>
+  </svg>
+
+  <div class="load" id="load">
+    <span id="loadText">Loading Dr. Amna… 0%</span>
+    <div class="bar"><i id="barFill"></i></div>
+  </div>
+
+  <div id="bubbles">
+    <div class="bubble">Happy birthday Panda, one more year older... hehe 😌</div>
+    <div class="bubble">Ek aur saal purani ho gayi ho, par koi nahi, sabr karo.</div>
+    <div class="bubble">May you always stay happy, may every dream of yours come true, and may you become Dr. Amna very soon. 🩺🤍</div>
+    <div class="bubble">And whenever I dream or pray for my own success, you're always a part of it. 🤍</div>
+    <div class="bubble pink">No need to thanks, I know I'm the great blessing you have in your life 😎</div>
+  </div>
+
+  <div id="sign">
+    <div class="luv">Luv yuh 💐<br>Your sweet, innocent, totally-not-dramatic friend Maneeha 😇</div>
+    <div class="code">
+      <b>// </b>Deployed with love. No bugs, only feelings. 🐛🤍<br>
+      <b>// </b>Built from scratch, line by line, just for you.<br>
+      <b>// </b>Developer: Maneeha 💻
+    </div>
+  </div>
+</div>
+
+<button id="replay">Replay</button>
+
+<script>
+const PALETTE = ["#ff7aa2", "#ffb3c7", "#c9b6ff", "#ffd36e", "#ff9ec0"];
+const FLOATERS = ["🩺", "💊", "🌸", "🤍", "💐", "🐼", "🧬", "💗"];
+
+const $ = id => document.getElementById(id);
+const canvas = $("garden"), ctx = canvas.getContext("2d");
+let W, H, flowers = [], confetti = [], startTime = 0, running = false, timers = [], floatTimer;
+
+function resize() {
+  const dpr = window.devicePixelRatio || 1;
+  W = innerWidth; H = innerHeight;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+}
+addEventListener("resize", resize); resize();
+
+const ease = t => 1 - Math.pow(1 - Math.min(Math.max(t, 0), 1), 3);
+const later = (fn, ms) => timers.push(setTimeout(fn, ms));
+
+function makeFlowers() {
+  flowers = [];
+  const count = Math.max(6, Math.floor(W / 85));
+  for (let i = 0; i < count; i++) {
+    flowers.push({
+      x: (i + 0.5) * (W / count) + (Math.random() - 0.5) * 24,
+      height: H * (0.14 + Math.random() * 0.2),
+      size: 20 + Math.random() * 14,
+      petals: 5 + Math.floor(Math.random() * 3),
+      color: PALETTE[i % PALETTE.length],
+      delay: 500 + i * 300 + Math.random() * 300,
+      sway: Math.random() * Math.PI * 2
+    });
+  }
+}
+
+function drawFlower(f, now) {
+  const t = now - startTime - f.delay;
+  if (t < 0) return;
+  const grow = ease(t / 1600), bloom = ease((t - 1200) / 1200);
+  const sway = Math.sin(now / 900 + f.sway) * 5 * grow;
+  const topX = f.x + sway, topY = H - f.height * grow;
+
+  ctx.strokeStyle = "#4fbf9f"; ctx.lineWidth = 3; ctx.lineCap = "round";
+  ctx.beginPath(); ctx.moveTo(f.x, H);
+  ctx.quadraticCurveTo(f.x, H - f.height * grow * 0.5, topX, topY); ctx.stroke();
+
+  if (bloom <= 0) return;
+  ctx.save(); ctx.translate(topX, topY); ctx.rotate(now / 7000 + f.sway);
+  for (let i = 0; i < f.petals; i++) {
+    ctx.rotate((Math.PI * 2) / f.petals);
+    ctx.fillStyle = f.color;
+    ctx.beginPath();
+    ctx.ellipse(0, -f.size * 0.7 * bloom, f.size * 0.38 * bloom, f.size * 0.75 * bloom, 0, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.fillStyle = "#fff3c4";
+  ctx.beginPath(); ctx.arc(0, 0, f.size * 0.3 * bloom, 0, Math.PI * 2); ctx.fill();
+  ctx.restore();
+}
+
+function burstConfetti() {
+  for (let i = 0; i < 150; i++) {
+    confetti.push({
+      x: W / 2, y: H * 0.4,
+      vx: (Math.random() - 0.5) * 13, vy: -Math.random() * 11 - 2,
+      size: 5 + Math.random() * 6, rot: Math.random() * 6,
+      color: PALETTE[Math.floor(Math.random() * PALETTE.length)]
+    });
+  }
+}
+
+function drawConfetti() {
+  confetti.forEach(c => {
+    c.vy += 0.22; c.x += c.vx; c.y += c.vy; c.rot += 0.1;
+    ctx.save(); ctx.translate(c.x, c.y); ctx.rotate(c.rot);
+    ctx.fillStyle = c.color; ctx.fillRect(-c.size / 2, -c.size / 2, c.size, c.size * 0.6);
+    ctx.restore();
+  });
+  confetti = confetti.filter(c => c.y < H + 20);
+}
+
+function loop(now) {
+  if (!running) return;
+  ctx.clearRect(0, 0, W, H);
+  flowers.forEach(f => drawFlower(f, now));
+  drawConfetti();
+  requestAnimationFrame(loop);
+}
+
+function spawnFloater() {
+  const el = document.createElement("span");
+  el.className = "float";
+  el.textContent = FLOATERS[Math.floor(Math.random() * FLOATERS.length)];
+  el.style.left = Math.random() * 94 + "vw";
+  el.style.animationDuration = 7 + Math.random() * 5 + "s";
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 13000);
+}
+
+function runLoader() {
+  let p = 0;
+  const id = setInterval(() => {
+    p += 3;
+    if (p >= 87) { p = 87; clearInterval(id); }
+    $("barFill").style.width = p + "%";
+    $("loadText").textContent = "Loading Dr. Amna… " + p + "%";
+  }, 90);
+  timers.push(id);
+}
+
+function reset() {
+  timers.forEach(t => { clearTimeout(t); clearInterval(t); });
+  timers = []; confetti = [];
+  clearInterval(floatTimer);
+  $("title").style.opacity = 0; $("ecg").style.opacity = 0; $("load").style.opacity = 0;
+  $("sign").style.opacity = 0; $("replay").classList.remove("on");
+  $("barFill").style.width = "0"; $("loadText").textContent = "Loading Dr. Amna… 0%";
+  document.querySelectorAll(".bubble").forEach(b => b.classList.remove("show"));
+  $("stage").scrollTo({ top: 0, behavior: "auto" });
+}
+
+function start() {
+  reset();
+  $("intro").classList.add("gone");
+  makeFlowers(); running = true; startTime = performance.now();
+  requestAnimationFrame(loop);
+  floatTimer = setInterval(spawnFloater, 900);
+
+  later(() => $("title").style.opacity = 1, 800);
+  later(() => $("ecg").style.opacity = 1, 1500);
+  later(() => { $("load").style.opacity = 1; runLoader(); }, 2000);
+
+  const bubbles = document.querySelectorAll(".bubble");
+  bubbles.forEach((b, i) => later(() => {
+    b.classList.add("show");
+    b.scrollIntoView({ behavior: "smooth", block: "end" });
+  }, 3200 + i * 2800));
+
+  const end = 3200 + bubbles.length * 2800;
+  later(() => {
+    $("sign").style.opacity = 1; burstConfetti();
+    $("sign").scrollIntoView({ behavior: "smooth", block: "end" });
+  }, end);
+  later(() => $("replay").classList.add("on"), end + 2500);
+}
+
+$("open").addEventListener("click", start);
+$("replay").addEventListener("click", () => {
+  $("intro").classList.remove("gone");
+  reset();
+});
+</script>
+</body>
+</html>
